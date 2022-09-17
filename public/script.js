@@ -50,6 +50,8 @@ function connectToNewUser(userId, stream){
 }
 function addVideoStream(video, stream){
     video.srcObject = stream
+    video.classList.add("card");
+    video.classList.add("card-body")
     video.addEventListener('loadedmetadata', () => {
         video.play()
     })
