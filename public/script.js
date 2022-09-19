@@ -2,7 +2,10 @@ const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined, {
     host: '/',
-    port:'5000'
+    port:'5000',
+	config: {'iceServers': [
+        { url: 'stun:stun.l.google.com:19302' },
+      ]}
 })
 
 const myVideo = document.createElement('video')
