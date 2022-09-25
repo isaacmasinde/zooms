@@ -22,6 +22,7 @@ navigator.mediaDevices.getUserMedia({
     myPeer.on('call', call  => {
         call.answer(stream)
         video = document.createElement('video')
+        video.setAttribute("id", call.peer)
         call.on('stream', UserVideoStream => {
             addVideoStream(video, UserVideoStream)
         })
@@ -49,22 +50,18 @@ navigator.mediaDevices.getUserMedia({
         
         //show what you are showing in your "self-view" video.
         myVideo.srcObject = displayMediaStream;
-        
+        displayMediaStream.getVideoTracks()[0].addEventListener('ended', () => {
+            calls.forEach((call) => {
+                console.log("got here")
+                const sender = call.peerConnection.getSenders().find((s) => s.track.kind === 'video');
+                console.log('Found sender:', sender);
+                sender.replaceTrack(stream.getVideoTracks()[0]);
+            });
+            myVideo.srcObject = stream;
+            displayMediaStream=''
+          })
 
       });
-      stream.getVideoTracks()[0].onended = function () {
-        console.log(calls);
-        calls.forEach((call) => {
-            console.log("got here")
-            const sender = call.peerConnection.getSenders().find((s) => s.track.kind === 'video');
-            console.log('Found sender:', sender);
-            sender.replaceTrack(stream.getVideoTracks()[0]);
-        });
-
-        
-        //show what you are showing in your "self-view" video.
-        myVideo.srcObject = stream;
-      };
     document.getElementById("mutecam").addEventListener("click", 
     function () {
         const videoTrack = stream.getTracks().find(track => track.kind == 'video');
@@ -94,6 +91,10 @@ navigator.mediaDevices.getUserMedia({
 socket.on('user-disconnected', userId => {
     console.log(userId + "Disconnected")
     if (peers[userId]) peers[userId].close()
+    var videoElement = document.getElementById(userId);
+    videoElement.pause();
+    videoElement.removeAttribute('src'); // empty source
+    videoElement.load();
 })
 myPeer.on('open', id => {
     socket.emit('join-room', ROOM_ID, id)
@@ -101,6 +102,7 @@ myPeer.on('open', id => {
 function connectToNewUser(userId, stream){
     const call = myPeer.call(userId, stream)
     video = document.createElement('video')
+    video.setAttribute("id", userId)
     
     call.on('stream', UserVideoStream => {
         addVideoStream(video, UserVideoStream)
