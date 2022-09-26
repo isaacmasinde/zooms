@@ -1,5 +1,6 @@
 const socket = io('/')
 let displayMediaStream
+let screenshare = false;
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined, {
     host: '/',
@@ -100,6 +101,9 @@ myPeer.on('open', id => {
     socket.emit('join-room', ROOM_ID, id)
 }) 
 function connectToNewUser(userId, stream){
+    if (displayMediaStream){
+        stream=displayMediaStream
+    }
     const call = myPeer.call(userId, stream)
     video = document.createElement('video')
     video.setAttribute("id", userId)
@@ -122,4 +126,5 @@ function addVideoStream(video, stream){
         video.play()
     })
     videoGrid.append(video)
+    
 }
